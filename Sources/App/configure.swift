@@ -7,8 +7,7 @@ import TelegramVaporBot
 
 public func configure(_ app: Application) async throws {
 
-    app.http.server.configuration.hostname = "0.0.0.0"
-    app.http.server.configuration.port = 80
+    app.http.server.configuration.hostname = "51.250.102.56"
 
     let tgApi: String = "7358659853:AAGu5GCqo6ydpKMIcqovKeY1gd9aAmJ_EL4"
     let bot: TGBot = .init(app: app, botId: tgApi)
