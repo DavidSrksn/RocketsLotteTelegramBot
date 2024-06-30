@@ -21,23 +21,34 @@ final class DbClient {
         )
         let db = DynamoDB(
             client: client,
-            endpoint: "https://docapi.serverless.yandexcloud.net/ru-central1/b1gmpof9ekkkesn2inj8/etn7r8okmapsskvpn8a3"
+            endpoint: "https://docapi.serverless.yandexcloud.net/ru-central1/b1gmpof9ekkkesn2inj8/etn5cts5et1fdbq54ak9"
         )
         return db
     }()
 
-    func createChat(id: String) {
-        let input = DbInputFactory.newChat(id)
-        db.putItem(input)
+    func getChat(chatid: String) -> Chat? {
+        let input = DbInputFactory.getChat(chatid)
+        let output = try? db.getItem(input, type: Chat.self).wait()
+        return output?.item
+    }
+
+    func setStatus(chatid: Int64, status: ChatStatus) {
+        let input = DbInputFactory.setStatus(chatid: chatid, status: status)
+        let output = db.updateItem(input)
+    }
+
+    func createChat(chatid: String) {
+        let input = DbInputFactory.newChat(chatid)
+        let _ = try? db.putItem(input).wait()
     }
 
     func editNickName(chatId: String, nickName: String) {
         let input = DbInputFactory.editNickName(chatid: chatId, nickName: nickName)
-        db.updateItem(input)
+        let output = db.updateItem(input)
     }
 
     func creatTable() {
         let input = DbInputFactory.newTable()
-        db.createTable(input)
+        let output = db.createTable(input)
     }
 }

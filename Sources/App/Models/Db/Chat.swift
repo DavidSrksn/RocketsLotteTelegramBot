@@ -9,15 +9,15 @@ import Foundation
 
 struct Chat: Codable {
     let id: String
-    let status: ChatStatus
+    let status: ChatStatus?
     let nickName: String?
-    let orders: [Order]
+    let orders: [Order]?
 
     init(
         id: String,
-        status: ChatStatus = .idle,
+        status: ChatStatus? = nil,
         nickName: String? = nil,
-        orders: [Order] = []
+        orders: [Order]? = nil
     ) {
         self.id = id
         self.status = status

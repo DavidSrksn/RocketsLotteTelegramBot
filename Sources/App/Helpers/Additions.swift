@@ -17,3 +17,14 @@ enum Icons: String {
         .url(rawValue)
     }
 }
+
+
+extension TGUpdate {
+    var chatId: Int64 {
+        if let chatId = message?.from?.id {
+            return chatId
+        } else {
+           fatalError("user id not found")
+       }
+    }
+}

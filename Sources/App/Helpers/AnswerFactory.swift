@@ -9,7 +9,7 @@ import Foundation
 
 enum AnswerFactory {
     static func makeInfo() -> String {
-        "Бот сделан для яндексойдов, которые кайфуют от Рокетс и экономии времени. Да, это Давид"
+        "Бот сделан для яндексойдов, которые хотят удобнее и быстрее пить кофе в любимом Рокетс на 6 этаже в Лотте. Да, это Давид @davidsrksn"
     }
 
     static func makeAddNickname() -> String {
