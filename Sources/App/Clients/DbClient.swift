@@ -26,9 +26,9 @@ final class DbClient {
         return db
     }()
 
-    func getChat(chatid: String) -> Chat? {
+    func getChat(chatid: Int64) async -> Chat? {
         let input = DbInputFactory.getChat(chatid)
-        let output = try? db.getItem(input, type: Chat.self).wait()
+        let output = try? await db.getItem(input, type: Chat.self).get()
         return output?.item
     }
 
@@ -42,8 +42,8 @@ final class DbClient {
         let _ = try? db.putItem(input).wait()
     }
 
-    func editNickName(chatId: String, nickName: String) {
-        let input = DbInputFactory.editNickName(chatid: chatId, nickName: nickName)
+    func editNickname(chatId: Int64, nickname: String) {
+        let input = DbInputFactory.editNickname(chatid: chatId, nickname: nickname)
         let output = db.updateItem(input)
     }
 

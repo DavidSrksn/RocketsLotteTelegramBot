@@ -3,12 +3,6 @@ import TelegramVaporBot
 
 final class DefaultBotHandlers {
 
-//    private let chat: Chat
-//
-//    init(chat: Chat) {
-//        self.chat = chat
-//    }
-
     func setup(app: Vapor.Application, connection: TGConnectionPrtcl) async {
         await infoHandler(app: app, connection: connection)
 
@@ -38,18 +32,24 @@ final class DefaultBotHandlers {
             try await update.message?.reply(text: AnswerFactory.makeAddNickname(), bot: bot)
         })
 
-//        await connection.dispatcher.add(TGMessageHandler(filters: ) { update, bot in
-//            guard let userId = update.message?.from?.id else { fatalError("user id not found") }
-//            try await sendMenu(userId: userId, connection: connection)
-//        })
+        await connection.dispatcher.add(TGBaseHandler { update, bot in
+            guard 
+                let chat = await DbClient.shared.getChat(chatid: update.chatId),
+                chat.status == .waitingNickname,
+                let message = update.message?.text,
+                message.isNotEmpty
+            else { return }
+
+            DbClient.shared.editNickname(chatId: update.chatId, nickname: message)
+            try await update.message?.reply(text: AnswerFactory.nicknameAdded(name: message), bot: bot)
+        })
     }
 
     private func menuItemsHandler(app: Vapor.Application, connection: TGConnectionPrtcl) async {
         for menuItem in MenuItem.allCases {
             await connection.dispatcher.add(TGCallbackQueryHandler(pattern: menuItem.pattern) { update, bot in
-                guard let userId = update.callbackQuery?.from.id else { fatalError("user id not found") }
                 let invoiceParams = TGSendInvoiceParams(
-                    chatId: .chat(userId),
+                    chatId: .chat(update.chatId),
                     title: "Оплатите ваш напиток",
                     description: "Сразу после оплаты мы начнем готовить. По готовности вы получите пока что ничего, но скоро добавим оповещения",
                     payload: "",

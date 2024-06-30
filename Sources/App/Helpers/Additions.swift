@@ -21,10 +21,22 @@ enum Icons: String {
 
 extension TGUpdate {
     var chatId: Int64 {
-        if let chatId = message?.from?.id {
+        if let chatId = message?.from?.id ?? callbackQuery?.from.id {
             return chatId
         } else {
            fatalError("user id not found")
        }
+    }
+}
+
+extension Array {
+    var isNotEmpty: Bool {
+        isEmpty == false
+    }
+}
+
+extension String {
+    var isNotEmpty: Bool {
+        isEmpty == false
     }
 }

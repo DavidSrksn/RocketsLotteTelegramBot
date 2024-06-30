@@ -10,18 +10,18 @@ import Foundation
 struct Chat: Codable {
     let id: String
     let status: ChatStatus?
-    let nickName: String?
+    let nickname: String?
     let orders: [Order]?
 
     init(
         id: String,
         status: ChatStatus? = nil,
-        nickName: String? = nil,
+        nickname: String? = nil,
         orders: [Order]? = nil
     ) {
         self.id = id
         self.status = status
-        self.nickName = nickName
+        self.nickname = nickname
         self.orders = orders
     }
 }

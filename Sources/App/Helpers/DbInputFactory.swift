@@ -3,9 +3,9 @@ import SotoDynamoDB
 
 enum DbInputFactory {
 
-    static func getChat(_ id: String) -> DynamoDB.GetItemInput {
+    static func getChat(_ id: Int64) -> DynamoDB.GetItemInput {
         return DynamoDB.GetItemInput(
-            key: [Constants.primaryKey: .s(id)],
+            key: [Constants.primaryKey: .s(id.description)],
             tableName: Constants.tableName
         )
     }
@@ -19,8 +19,8 @@ enum DbInputFactory {
         )
     }
 
-    static func editNickName(chatid: String, nickName: String) -> DynamoDB.UpdateItemCodableInput<Chat> {
-        let chat = Chat(id: chatid, status: .idle, nickName: nickName)
+    static func editNickname(chatid: Int64, nickname: String) -> DynamoDB.UpdateItemCodableInput<Chat> {
+        let chat = Chat(id: chatid.description, status: .idle, nickname: nickname)
         return DynamoDB.UpdateItemCodableInput(
             key: [Constants.primaryKey],
             returnValues: .allNew,

@@ -15,4 +15,8 @@ enum AnswerFactory {
     static func makeAddNickname() -> String {
         "Как подписать ваш заказ? Напишем на стикере для вашего удобства"
     }
+
+    static func nicknameAdded(name: String) -> String {
+        "Спасибо! Напишем на стикере \(name) ✍️"
+    }
 }
