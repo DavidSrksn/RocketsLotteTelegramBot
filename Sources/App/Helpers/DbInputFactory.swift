@@ -29,6 +29,18 @@ enum DbInputFactory {
         )
     }
 
+    static func placeOrder(chat: Chat, order: Order) -> DynamoDB.UpdateItemCodableInput<Chat> {
+        var orders = chat.orders ?? []
+        orders.append(order)
+        let chat = Chat(id: chat.id, status: .idle, nickname: chat.nickname, orders: orders)
+        return DynamoDB.UpdateItemCodableInput(
+            key: [Constants.primaryKey],
+            returnValues: .allNew,
+            tableName: Constants.tableName,
+            updateItem: chat
+        )
+    }
+
     static func setStatus(chatid: Int64, status: ChatStatus) -> DynamoDB.UpdateItemCodableInput<Chat> {
         let chat = Chat(id: chatid.description, status: status)
         return DynamoDB.UpdateItemCodableInput(

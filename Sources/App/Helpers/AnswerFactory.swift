@@ -17,6 +17,14 @@ enum AnswerFactory {
     }
 
     static func nicknameAdded(name: String) -> String {
-        "Спасибо! Напишем на стикере \(name) ✍️"
+        "Спасибо, \(name) ✍️"
+    }
+
+    static func invoiceTitle() -> String {
+        "Оплатите счет"
+    }
+
+    static func invoiceDescription() -> String {
+        "По готовности мы отправим сообщение"
     }
 }

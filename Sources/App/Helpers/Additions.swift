@@ -8,7 +8,7 @@
 import Foundation
 import TelegramVaporBot
 
-let providerToken: String = "381764678:TEST:88852"
+let providerToken: String = "401643678:TEST:5c75d304-715b-4f09-8cde-8999f0eccda8"
 
 enum Icons: String {
     case rocketsLogo = "https://rockets.coffee/images/logo.png"

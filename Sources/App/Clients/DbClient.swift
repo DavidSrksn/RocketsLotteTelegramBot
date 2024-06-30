@@ -47,9 +47,9 @@ final class DbClient {
         let output = db.updateItem(input)
     }
 
-    func placeOrder(chatId: Int64, order: Order) {
-//        let input = DbInputFactory.editNickname(chatid: chatId, nickname: nickname)
-//        let output = db.updateItem(input)
+    func placeOrder(chat: Chat, order: Order) {
+        let input = DbInputFactory.placeOrder(chat: chat, order: order)
+        let output = db.updateItem(input)
     }
 
     func creatTable() {

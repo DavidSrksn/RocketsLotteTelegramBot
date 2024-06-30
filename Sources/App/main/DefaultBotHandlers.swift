@@ -49,7 +49,10 @@ final class DefaultBotHandlers {
     private func checkoutHandler(app: Vapor.Application, connection: TGConnectionPrtcl) async {
         await connection.dispatcher.add(TGBaseHandler { update, bot in
             guard
-                let preCheckoutQuery = update.preCheckoutQuery
+                let preCheckoutQuery = update.preCheckoutQuery,
+                let chat = await DbClient.shared.getChat(chatid: update.chatId),
+                let productId = update.preCheckoutQuery?.invoicePayload,
+                let product = MenuItem(rawValue: productId)
             else { return }
 
             let preCheckoutQueryParams = TGAnswerPreCheckoutQueryParams(
@@ -57,19 +60,19 @@ final class DefaultBotHandlers {
                 ok: true
             )
             try await bot.answerPreCheckoutQuery(params: preCheckoutQueryParams)
-//            let order = Order(id: preCheckoutQuery.id, productName: product.pattern, productId: product.id)
-//            DbClient.shared.placeOrder(chatId: update.chatId, order: order)
+            let order = Order(id: preCheckoutQuery.id, productName: product.name, productId: product.id)
+            DbClient.shared.placeOrder(chat: chat, order: order)
         })
     }
 
     private func menuItemsHandler(app: Vapor.Application, connection: TGConnectionPrtcl) async {
         for menuItem in MenuItem.allCases {
-            await connection.dispatcher.add(TGCallbackQueryHandler(pattern: menuItem.id) { update, bot in
+            await connection.dispatcher.add(TGCallbackQueryHandler(pattern: menuItem.orderPattern) { update, bot in
                 let invoiceParams = TGSendInvoiceParams(
                     chatId: .chat(update.chatId),
-                    title: "Оплатите ваш напиток",
-                    description: "Сразу после оплаты мы начнем готовить. По готовности вы получите пока что ничего, но скоро добавим оповещения",
-                    payload: "test",
+                    title: AnswerFactory.invoiceTitle(),
+                    description: AnswerFactory.invoiceDescription(),
+                    payload: menuItem.id,
                     providerToken: providerToken,
                     currency: "RUB",
                     prices: [TGLabeledPrice(label: "RUB", amount: 60000)],
@@ -90,7 +93,15 @@ final class DefaultBotHandlers {
 
 extension DefaultBotHandlers {
     private func sendMenu(userId: Int64, connection: TGConnectionPrtcl) async throws {
-        let buttons = MenuItem.allCases.map(\.buttons)
+        let chat = await DbClient.shared.getChat(chatid: userId)
+        let orders = chat?.orders ?? []
+        let orderedProductIds = orders.map(\.productId).uniqued()
+        let orderedProducts = MenuItem.allCases.sorted { lhs, rhs in
+            orderedProductIds.contains(lhs.id)
+        }
+
+
+        let buttons = orderedProducts.map(\.buttons)
         let keyboard: TGInlineKeyboardMarkup = .init(inlineKeyboard: buttons)
         let photoParams = TGSendPhotoParams(
             chatId: .chat(userId),
