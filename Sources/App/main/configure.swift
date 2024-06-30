@@ -4,12 +4,15 @@ import FluentSQLiteDriver
 import Vapor
 import TelegramVaporBot
 
-
 public func configure(_ app: Application) async throws {
 
-    app.http.server.configuration.hostname = "51.250.102.56"
+//    app.http.server.configuration.hostname = "51.250.102.56"
+    app.http.server.configuration.hostname = "0.0.0.0"
+    app.http.server.configuration.port = 80
 
-    let tgApi: String = "7358659853:AAGu5GCqo6ydpKMIcqovKeY1gd9aAmJ_EL4"
+    DbClient.shared.createChat(id: "test")
+
+    let tgApi: String = "7295409848:AAEawsWC1hgxQih_7qYBu7ENXP5CKUX22SI"
     let bot: TGBot = .init(app: app, botId: tgApi)
 
     TGBot.log.logLevel = app.logger.logLevel

@@ -16,6 +16,7 @@ let package = Package(
         // 🔵 Non-blocking, event-driven networking for Swift. Used for custom executors
         .package(url: "https://github.com/apple/swift-nio.git", from: "2.65.0"),
         .package(url: "https://github.com/nerzh/telegram-vapor-bot", .upToNextMajor(from: "2.1.0")),
+        .package(url: "https://github.com/soto-project/soto.git", from: "6.0.0")
     ],
     targets: [
         .executableTarget(
@@ -27,6 +28,10 @@ let package = Package(
                 .product(name: "NIOCore", package: "swift-nio"),
                 .product(name: "NIOPosix", package: "swift-nio"),
                 .product(name: "TelegramVaporBot", package: "telegram-vapor-bot"),
+                .product(name: "SotoS3", package: "soto"),
+                .product(name: "SotoSES", package: "soto"),
+                .product(name: "SotoIAM", package: "soto"),
+                .product(name: "SotoDynamoDB", package: "soto"),
             ],
             swiftSettings: swiftSettings
         ),
@@ -37,7 +42,7 @@ let package = Package(
                 .product(name: "XCTVapor", package: "vapor"),
             ],
             swiftSettings: swiftSettings
-        )
+        ),
     ]
 )
 

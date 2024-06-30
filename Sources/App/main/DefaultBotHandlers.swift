@@ -11,7 +11,7 @@ final class DefaultBotHandlers {
     }
 
     private static func menuHandler(app: Vapor.Application, connection: TGConnectionPrtcl) async {
-        await connection.dispatcher.add(TGCommandHandler(commands: ["/menu"]) { update, bot in
+        await connection.dispatcher.add(TGCommandHandler(commands: ["/menu", "/start"]) { update, bot in
             guard let userId = update.message?.from?.id else { fatalError("user id not found") }
             let buttons = MenuItem.allCases.map(\.buttons)
             let keyboard: TGInlineKeyboardMarkup = .init(inlineKeyboard: buttons)
@@ -46,7 +46,7 @@ final class DefaultBotHandlers {
     /// Handler for Commands
     private static func infoHandler(app: Vapor.Application, connection: TGConnectionPrtcl) async {
         await connection.dispatcher.add(TGCommandHandler(commands: ["/info"]) { update, bot in
-            try await update.message?.reply(text: "Бот сделан для яндексойдов, которые кайфуют от Рокетс и экономии времени. Да, это Давид", bot: bot)
+            try await update.message?.reply(text: AnswerFactory.makeInfo(), bot: bot)
         })
     }
 }
