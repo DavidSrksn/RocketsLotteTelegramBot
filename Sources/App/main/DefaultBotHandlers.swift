@@ -10,6 +10,7 @@ final class DefaultBotHandlers {
         await menuItemsHandler(app: app, connection: connection)
         await startHandler(app: app, connection: connection)
         await nicknameHandler(app: app, connection: connection)
+        await checkoutHandler(app: app, connection: connection)
     }
 
     private func startHandler(app: Vapor.Application, connection: TGConnectionPrtcl) async {
@@ -45,18 +46,34 @@ final class DefaultBotHandlers {
         })
     }
 
+    private func checkoutHandler(app: Vapor.Application, connection: TGConnectionPrtcl) async {
+        await connection.dispatcher.add(TGBaseHandler { update, bot in
+            guard
+                let preCheckoutQuery = update.preCheckoutQuery
+            else { return }
+
+            let preCheckoutQueryParams = TGAnswerPreCheckoutQueryParams(
+                preCheckoutQueryId: preCheckoutQuery.id,
+                ok: true
+            )
+            try await bot.answerPreCheckoutQuery(params: preCheckoutQueryParams)
+//            let order = Order(id: preCheckoutQuery.id, productName: product.pattern, productId: product.id)
+//            DbClient.shared.placeOrder(chatId: update.chatId, order: order)
+        })
+    }
+
     private func menuItemsHandler(app: Vapor.Application, connection: TGConnectionPrtcl) async {
         for menuItem in MenuItem.allCases {
-            await connection.dispatcher.add(TGCallbackQueryHandler(pattern: menuItem.pattern) { update, bot in
+            await connection.dispatcher.add(TGCallbackQueryHandler(pattern: menuItem.id) { update, bot in
                 let invoiceParams = TGSendInvoiceParams(
                     chatId: .chat(update.chatId),
                     title: "Оплатите ваш напиток",
                     description: "Сразу после оплаты мы начнем готовить. По готовности вы получите пока что ничего, но скоро добавим оповещения",
-                    payload: "",
+                    payload: "test",
                     providerToken: providerToken,
                     currency: "RUB",
-                    prices: [TGLabeledPrice(label: "RUB", amount: 249)],
-                    photoUrl: menuItem.photo
+                    prices: [TGLabeledPrice(label: "RUB", amount: 60000)],
+                    startParameter: "test"
                 )
                 try await bot.sendInvoice(params: invoiceParams)
             })

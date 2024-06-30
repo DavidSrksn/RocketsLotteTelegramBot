@@ -8,7 +8,7 @@
 import Foundation
 import TelegramVaporBot
 
-let providerToken: String = "381764678:TEST:88648"
+let providerToken: String = "381764678:TEST:88852"
 
 enum Icons: String {
     case rocketsLogo = "https://rockets.coffee/images/logo.png"
@@ -21,7 +21,7 @@ enum Icons: String {
 
 extension TGUpdate {
     var chatId: Int64 {
-        if let chatId = message?.from?.id ?? callbackQuery?.from.id {
+        if let chatId = message?.from?.id ?? callbackQuery?.from.id ?? preCheckoutQuery?.from.id {
             return chatId
         } else {
            fatalError("user id not found")
