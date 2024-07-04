@@ -14,7 +14,7 @@ final class DefaultBotHandlers {
     }
 
     private func startHandler(app: Vapor.Application, connection: TGConnectionPrtcl) async {
-        await connection.dispatcher.add(TGCommandHandler(commands: ["/start"]) { update, bot in
+        await connection.dispatcher.add(TGCommandHandler(commands: [.start]) { update, bot in
             let userId = update.chatId
             DbClient.shared.createChat(chatid: userId.description)
             try await self.sendMenu(userId: userId, connection: connection)
@@ -22,17 +22,12 @@ final class DefaultBotHandlers {
     }
 
     private func menuHandler(app: Vapor.Application, connection: TGConnectionPrtcl) async {
-        await connection.dispatcher.add(TGCommandHandler(commands: ["/menu"]) { update, bot in
+        await connection.dispatcher.add(TGCommandHandler(commands: [.menu]) { update, bot in
             try await self.sendMenu(userId: update.chatId, connection: connection)
         })
     }
 
     private func nicknameHandler(app: Vapor.Application, connection: TGConnectionPrtcl) async {
-        await connection.dispatcher.add(TGCommandHandler(commands: ["/nickname"]) { update, bot in
-            DbClient.shared.setStatus(chatid: update.chatId, status: .waitingNickname)
-            try await update.message?.reply(text: AnswerFactory.makeAddNickname(), bot: bot)
-        })
-
         await connection.dispatcher.add(TGBaseHandler { update, bot in
             guard 
                 let chat = await DbClient.shared.getChat(chatid: update.chatId),
@@ -43,6 +38,11 @@ final class DefaultBotHandlers {
 
             DbClient.shared.editNickname(chatId: update.chatId, nickname: message)
             try await update.message?.reply(text: AnswerFactory.nicknameAdded(name: message), bot: bot)
+        })
+
+        await connection.dispatcher.add(TGCommandHandler(commands: [.nickname]) { update, bot in
+            DbClient.shared.setStatus(chatid: update.chatId, status: .waitingNickname)
+            try await update.message?.reply(text: AnswerFactory.makeAddNickname(), bot: bot)
         })
     }
 
@@ -59,7 +59,15 @@ final class DefaultBotHandlers {
                 preCheckoutQueryId: preCheckoutQuery.id,
                 ok: true
             )
+            let nickname = await DbClient.shared.getChat(chatid: update.chatId)?.nickname
             try await bot.answerPreCheckoutQuery(params: preCheckoutQueryParams)
+
+            let successMessage = TGSendMessageParams(
+                chatId: .chat(update.chatId),
+                text: AnswerFactory.thanksForOrder(nickname: nickname, productName: product.name)
+            )
+            try await bot.sendMessage(params: successMessage)
+
             let order = Order(id: preCheckoutQuery.id, productName: product.name, productId: product.id)
             DbClient.shared.placeOrder(chat: chat, order: order)
         })
@@ -68,14 +76,15 @@ final class DefaultBotHandlers {
     private func menuItemsHandler(app: Vapor.Application, connection: TGConnectionPrtcl) async {
         for menuItem in MenuItem.allCases {
             await connection.dispatcher.add(TGCallbackQueryHandler(pattern: menuItem.orderPattern) { update, bot in
+                let nickname = await DbClient.shared.getChat(chatid: update.chatId)?.nickname
                 let invoiceParams = TGSendInvoiceParams(
                     chatId: .chat(update.chatId),
-                    title: AnswerFactory.invoiceTitle(),
-                    description: AnswerFactory.invoiceDescription(),
+                    title: AnswerFactory.invoiceTitle(productName: menuItem.name),
+                    description: AnswerFactory.invoiceDescription(nickname: nickname),
                     payload: menuItem.id,
                     providerToken: providerToken,
                     currency: "RUB",
-                    prices: [TGLabeledPrice(label: "RUB", amount: 60000)],
+                    prices: [TGLabeledPrice(label: "RUB", amount: menuItem.price * 100)],
                     startParameter: "test"
                 )
                 try await bot.sendInvoice(params: invoiceParams)
@@ -85,7 +94,7 @@ final class DefaultBotHandlers {
 
     /// Handler for Commands
     private func infoHandler(app: Vapor.Application, connection: TGConnectionPrtcl) async {
-        await connection.dispatcher.add(TGCommandHandler(commands: ["/info"]) { update, bot in
+        await connection.dispatcher.add(TGCommandHandler(commands: [.info]) { update, bot in
             try await update.message?.reply(text: AnswerFactory.makeInfo(), bot: bot)
         })
     }
@@ -95,13 +104,11 @@ extension DefaultBotHandlers {
     private func sendMenu(userId: Int64, connection: TGConnectionPrtcl) async throws {
         let chat = await DbClient.shared.getChat(chatid: userId)
         let orders = chat?.orders ?? []
-        let orderedProductIds = orders.map(\.productId).uniqued()
-        let orderedProducts = MenuItem.allCases.sorted { lhs, rhs in
-            orderedProductIds.contains(lhs.id)
-        }
+        let orderedProducts = orders.map(\.productId).reversed().unique.compactMap(MenuItem.init)
+        let products = (orderedProducts + MenuItem.allCases).unique
 
 
-        let buttons = orderedProducts.map(\.buttons)
+        let buttons = products.map(\.buttons)
         let keyboard: TGInlineKeyboardMarkup = .init(inlineKeyboard: buttons)
         let photoParams = TGSendPhotoParams(
             chatId: .chat(userId),

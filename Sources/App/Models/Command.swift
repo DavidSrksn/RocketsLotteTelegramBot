@@ -8,18 +8,11 @@
 import Foundation
 import TelegramVaporBot
 
-enum Command {
+enum Command: String {
+    case start
     case menu
-    case menuItem(MenuItem)
-
-    var code: String {
-        switch self {
-        case .menu:
-            return "menu"
-        case .menuItem(let item):
-            return item.rawValue
-        }
-    }
+    case info
+    case nickname
 }
 
 enum MenuItem: String, CaseIterable {
@@ -39,6 +32,15 @@ enum MenuItem: String, CaseIterable {
         "/order \(id)"
     }
 
+    var price: Int {
+        switch self {
+        case .iceMatcha:
+            return 250
+        case .iceLatte:
+            return 280
+        }
+    }
+
     var photo: String {
         switch self {
         case .iceLatte:
@@ -51,9 +53,9 @@ enum MenuItem: String, CaseIterable {
     var name: String {
         switch self {
         case .iceLatte:
-            return "Ice Latte"
+            return "Айс Латте"
         case .iceMatcha:
-            return "Ice Matcha"
+            return "Айс Матча"
         }
     }
 }

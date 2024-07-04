@@ -9,7 +9,7 @@ import Foundation
 
 enum AnswerFactory {
     static func makeInfo() -> String {
-        "Бот сделан для яндексойдов, которые хотят удобнее и быстрее пить кофе в любимом Рокетс на 6 этаже в Лотте. Да, это Давид @davidsrksn"
+        "Бот сделан для яндексойдов, которые хотят удобнее пить кофе в любимом Rockets на 6 этаже в Лотте @davidsrksn"
     }
 
     static func makeAddNickname() -> String {
@@ -17,14 +17,20 @@ enum AnswerFactory {
     }
 
     static func nicknameAdded(name: String) -> String {
-        "Спасибо, \(name) ✍️"
+        "✍️ Вы всегда можете поменять подпись, воспользовавшись командой /\(Command.nickname.rawValue)"
     }
 
-    static func invoiceTitle() -> String {
-        "Оплатите счет"
+    static func invoiceTitle(productName: String) -> String {
+        "Оплатите \(productName)"
     }
 
-    static func invoiceDescription() -> String {
-        "По готовности мы отправим сообщение"
+    static func invoiceDescription(nickname: String?) -> String {
+        let appeal = nickname.flatMap { " , \($0)" } ?? ""
+        return "По готовности мы отправим сообщение\(appeal)"
+    }
+
+    static func thanksForOrder(nickname: String?, productName: String) -> String {
+        let appeal = nickname.flatMap { " , \($0)" } ?? ""
+        return "Спасибо\(appeal)! Скоро начнем готовить ваш \(productName)"
     }
 }

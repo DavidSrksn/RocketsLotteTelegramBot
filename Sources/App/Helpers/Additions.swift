@@ -29,9 +29,18 @@ extension TGUpdate {
     }
 }
 
-extension Array {
+extension Array where Element: Equatable {
     var isNotEmpty: Bool {
         isEmpty == false
+    }
+
+    var unique: [Element] {
+        var uniqueValues: [Element] = []
+        forEach { item in
+            guard !uniqueValues.contains(item) else { return }
+            uniqueValues.append(item)
+        }
+        return uniqueValues
     }
 }
 
@@ -39,4 +48,18 @@ extension String {
     var isNotEmpty: Bool {
         isEmpty == false
     }
+}
+
+extension TGCommandHandler {
+
+    convenience init(
+        commands: [Command],
+        _ callback: @escaping TGHandlerCallbackAsync
+    ) {
+        let formattedCommands = commands.map {
+            "/\($0)"
+        }
+        self.init(commands: formattedCommands, callback)
+    }
+
 }
