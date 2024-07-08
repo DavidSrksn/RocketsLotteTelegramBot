@@ -17,6 +17,7 @@ final class DefaultBotHandlers {
         await connection.dispatcher.add(TGCommandHandler(commands: [.start]) { update, bot in
             let userId = update.chatId
             DbClient.shared.createChat(chatid: userId.description)
+            try await self.sendInfoAboutBot(update: update, bot: bot)
             try await self.sendMenu(userId: userId, connection: connection)
         })
     }
@@ -95,7 +96,7 @@ final class DefaultBotHandlers {
     /// Handler for Commands
     private func infoHandler(app: Vapor.Application, connection: TGConnectionPrtcl) async {
         await connection.dispatcher.add(TGCommandHandler(commands: [.info]) { update, bot in
-            try await update.message?.reply(text: AnswerFactory.makeInfo(), bot: bot)
+            try await self.sendInfoAboutBot(update: update, bot: bot)
         })
     }
 }
@@ -116,5 +117,13 @@ extension DefaultBotHandlers {
             replyMarkup: .inlineKeyboardMarkup(keyboard)
         )
         try await connection.bot.sendPhoto(params: photoParams)
+    }
+
+    private func sendInfoAboutBot(update: TGUpdate, bot: TGBot) async throws {
+        let message = TGSendMessageParams(
+            chatId: .chat(update.chatId),
+            text: AnswerFactory.makeInfo()
+        )
+        try await bot.sendMessage(params: message)
     }
 }
